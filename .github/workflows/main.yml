@@ -1,0 +1,40 @@
+name: Compilar APK de Flutter
+
+on:
+  workflow_dispatch: # Esto nos permite apretar un botón para compilar cuando queramos
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v3
+
+      - name: Instalar Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Instalar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Descomprimir el proyecto
+        run: |
+          unzip "Servicio-Tecnico (1).zip" -d proyecto_temporal
+          cp -r proyecto_temporal/* . || true
+          rm -rf proyecto_temporal
+
+      - name: Obtener dependencias de Flutter
+        run: flutter pub get
+
+      - name: Construir el APK real
+        run: flutter build apk --release
+
+      - name: Guardar el instalador APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
